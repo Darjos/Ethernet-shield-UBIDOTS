@@ -1,0 +1,48 @@
+#include <Ethernet.h>
+#include <SPI.h>
+#include <String.h>
+
+
+byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
+byte ip[] = { 192,168,1,10 };
+
+EthernetClient client;
+
+void setup()
+{
+  Ethernet.begin(mac, ip);
+  Serial.begin(9600);
+
+  delay(1000);
+
+  Serial.println("connecting...");
+  
+ 
+  if (client.connect("things.ubidots.com", 80)) {
+    Serial.println("connected");
+    client.println("POST /api/v1.6/variables/54eaa34a7625427b9cdc4fb7/values HTTP/1.1");
+    client.println("Content-Type: application/json");
+    client.println("X-Auth-Token: MX6IH9zwM7OeYTwsb8r1ukNvotLTYjEhfQ1w7GP2MDl8ckXkImyjUs9dNF38");
+    client.println("Host: things.ubidots.com");
+    client.println('{"value": 2.0,}');
+    client.println();
+  } else {
+    Serial.println("connection failed");
+  }
+}
+
+void loop()
+{
+  if (client.available()) {
+    char c = client.read();
+    Serial.print(c);
+  }
+
+  if (!client.connected()) {
+    Serial.println();
+    Serial.println("disconnecting.");
+    client.stop();
+    for(;;)
+      ;
+  }
+}
